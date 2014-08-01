@@ -21,7 +21,7 @@
  */
 
 defined('MOODLE_INTERNAL') or die;
- 
+
 /**
  *
  */
@@ -29,7 +29,7 @@ class block_dataformnotification extends block_base {
 
     public $dataformid;
 
-    static function get_extra_capabilities() {
+    static public function get_extra_capabilities() {
         $capabilities = array();
 
         $capabilities[] = 'mod/dataform:notification';
@@ -38,26 +38,26 @@ class block_dataformnotification extends block_base {
     }
 
     /**
-     * Set the applicable formats for this block
+     * Set the applicable formats for this block.
      * @return array
      */
-    function applicable_formats() {
+    public function applicable_formats() {
         return array('mod-dataform-notification-index' => true);
     }
 
     /**
      *
      */
-    function init() {
-        $this->title = get_string('pluginname','block_dataformnotification');
+    public function init() {
+        $this->title = get_string('pluginname', 'block_dataformnotification');
     }
 
     /**
      *
      */
-    function specialization() {
+    public function specialization() {
         global $DB;
-        
+
         if (!empty($this->config->name)) {
             $this->title = $this->config->name;
         }
@@ -68,14 +68,14 @@ class block_dataformnotification extends block_base {
     /**
      *
      */
-    function instance_allow_multiple() {
+    public function instance_allow_multiple() {
         return true;
     }
 
     /**
      *
      */
-    function get_content() {
+    public function get_content() {
         return null;
     }
 
@@ -89,22 +89,22 @@ class block_dataformnotification extends block_base {
         if (empty($data['event'])) {
             return false;
         }
-        
-        $eventname = str_replace('\mod_dataform\event\\', '', $data['event']);        
+
+        $eventname = str_replace('\mod_dataform\event\\', '', $data['event']);
         if (!in_array($eventname, $this->config->events)) {
-           return false;
+            return false;
         }
         return true;
     }
-    
+
     /**
-     * Returns array of applicable events
+     * Returns array of applicable events.
      *
      * @return array
      */
     public function get_applicable_events() {
         global $CFG;
-        
+
         $eventnames = array();
         foreach (get_directory_list("$CFG->dirroot/mod/dataform/classes/event") as $filename) {
             if (strpos($filename, '_base.php') !== false) {
@@ -113,11 +113,11 @@ class block_dataformnotification extends block_base {
             $name = basename($filename, '.php');
             $eventnames[] = $name;
         }
-            
+
         $events = array();
         foreach ($eventnames as $name) {
             $events[$name] = get_string('event_'. $name, 'dataform');
         }
         return $events;
-    }    
+    }
 }

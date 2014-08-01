@@ -4,9 +4,9 @@ The Dataform notification block provides context and settings for [Dataform_modu
 
 Release:
 ------------
-2.6.0
+2.7.0
 
 Documentation:
 --------------
-http://docs.moodle.org/26/en/Dataform_notification_block
+http://docs.moodle.org/27/en/Dataform_notification_block
 

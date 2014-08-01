@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,33 +25,32 @@ class block_dataformnotification_edit_form extends block_edit_form {
     protected function specific_definition($mform) {
         $notificationformhelper = '\mod_dataform\pluginbase\dataformnotificationform_helper';
         $notificationformhelper::general_definition($mform, $this->block->dataformid, 'config_');
-        
-        // Events selector
-        $events = $this->block->get_applicable_events();  
+
+        // Events selector.
+        $events = $this->block->get_applicable_events();
         $select = &$mform->addElement('select', 'config_events', get_string('events', 'dataform'), $events);
         $select->setMultiple(true);
-        $mform->addRule('config_events', null, 'required', null, 'client');       
-        
+        $mform->addRule('config_events', null, 'required', null, 'client');
+
         $notificationformhelper::notification_definition($mform, $this->block->dataformid, 'config_');
     }
-    
+
     /**
      *
      */
-    function validation($data, $files) {
+    public function validation($data, $files) {
         if ($errors = parent::validation($data, $files)) {
             return $errors;
         }
-            
+
         $notificationformhelper = '\mod_dataform\pluginbase\dataformnotificationform_helper';
         if ($errors = $notificationformhelper::general_validation($data, $files, 'config_')) {
             return $errors;
         }
-            
+
         if ($errors = $notificationformhelper::notification_validation($data, $files, 'config_')) {
             return $errors;
         }
-            
+
     }
-    
 }
