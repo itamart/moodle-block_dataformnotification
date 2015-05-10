@@ -80,24 +80,6 @@ class block_dataformnotification extends block_base {
     }
 
     /**
-     * Returns true if the entry passed in the data meets the rule filter criteria.
-     *
-     * @param array $data Expects event name.
-     * @return bool
-     */
-    public function is_applicable(array $data) {
-        if (empty($data['event'])) {
-            return false;
-        }
-
-        $eventname = str_replace('\mod_dataform\event\\', '', $data['event']);
-        if (!in_array($eventname, $this->config->events)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Returns array of applicable events.
      *
      * @return array
@@ -119,5 +101,103 @@ class block_dataformnotification extends block_base {
             $events[$name] = get_string('event_'. $name, 'dataform');
         }
         return $events;
+    }
+
+    /**
+     * Returns true if the entry passed in the data meets the rule filter criteria.
+     *
+     * @param array $data Expects event name.
+     * @return bool
+     */
+    public function is_applicable(array $data) {
+        if (empty($data['event'])) {
+            return false;
+        }
+
+        $eventname = str_replace('\mod_dataform\event\\', '', $data['event']);
+        if (!in_array($eventname, $this->config->events)) {
+            return false;
+        }
+
+        // The filter requires an entry.
+        if (!empty($data['entryid'])) {
+            // Get the filter.
+            $filter = $this->get_filter($data);
+
+            // Get entries manager.
+            $entryman = new mod_dataform_entry_manager($this->dataformid);
+            // Check if entries found.
+            if (!$entryman->count_entries(array('filter' => $filter))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     *
+     */
+    public function get_data($event) {
+        $config = $this->config;
+
+        if (!empty($config->contentview)) {
+            // Try view content first.
+            $df = new \mod_dataform_dataform($this->dataformid, null, true);
+            $viewman = $df->view_manager;
+            if ($view = $viewman->get_view_by_name($config->contentview)) {
+                $params = array(
+                        'css' => true,
+                        'completion' => true,
+                        'comments' => true,
+                        'nologin' => true,
+                );
+                $pageoutput = $df->set_page('external', $params);
+
+                // Do we have an entry here?
+                if ($event->target == 'entry') {
+                    $entryid = $event->other['entryid'];
+                    $view->set_viewfilter(array('eids' => $entryid));
+                } else {
+                    $view->set_viewfilter();
+                }
+                $viewcontent = $view->display();
+                $message = "$pageoutput\n$viewcontent";
+            }
+        } else if (!empty($config->contenttext)) {
+            // Try text content.
+            $message = $config->contenttext;
+        }
+
+        $config->message = $message;
+
+        return $config;
+    }
+
+
+    /**
+     * Generates the rule filter.
+     *
+     * @param array $data Expects entry object.
+     * @return bool
+     */
+    protected function get_filter(array $data) {
+        $config = $this->config;
+
+        // Get the filter.
+        $fm = mod_dataform_filter_manager::instance($this->dataformid);
+        $filterid = !empty($config->filterid) ? $config->filterid : 0;
+        $filter = $fm->get_filter_by_id($filterid);
+
+        // Add custom search.
+        if (!empty($config->customsearch)) {
+            $filter->append_search_options($config->customsearch);
+        }
+
+        // Add a search criterion for the entry id.
+        if (!empty($data['entryid'])) {
+            $filter->eids = $data['entryid'];
+        }
+
+        return $filter;
     }
 }
