@@ -23,16 +23,59 @@
 class block_dataformnotification_edit_form extends block_edit_form {
 
     protected function specific_definition($mform) {
-        $notificationformhelper = '\mod_dataform\pluginbase\dataformnotificationform_helper';
-        $notificationformhelper::general_definition($mform, $this->block->dataformid, 'config_');
+        $dataformid = $this->block->dataformid;
+        $ruleformhelper = '\mod_dataform\helper\ruleform';
+        $notificationformhelper = '\mod_dataform\helper\notificationform';
+        $filterformhelper = '\mod_dataform\helper\filterform';
 
-        // Events selector.
+        // Common elements.
+        $ruleformhelper::general_definition($mform, $dataformid, 'config_');
+
+        // Events.
+        $mform->addElement('header', 'eventshdr', get_string('event', 'dataform'));
+        $mform->setExpanded('eventshdr');
+
         $events = $this->block->get_applicable_events();
         $select = &$mform->addElement('select', 'config_events', get_string('events', 'dataform'), $events);
         $select->setMultiple(true);
         $mform->addRule('config_events', null, 'required', null, 'client');
 
-        $notificationformhelper::notification_definition($mform, $this->block->dataformid, 'config_');
+        // Notification.
+        $notificationformhelper::notification_definition($mform, $dataformid, 'config_');
+
+        // Filter.
+        $mform->addElement('header', 'filterhdr', get_string('filter', 'dataform'));
+        $mform->setExpanded('filterhdr');
+
+        // Filter selector.
+        $filterformhelper::filter_selection_definition($mform, $dataformid, 'config_');
+
+        // Custom search.
+        $config = $this->block->config;
+        $customsearch = !empty($config->customsearch) ? $config->customsearch : null;
+        $filterformhelper::custom_search_definition($mform, $dataformid, $customsearch);
+    }
+
+    /**
+     *
+     */
+    public function get_data() {
+        if ($data = parent::get_data()) {
+            // Content.
+            if ($data->config_contentview) {
+                $data->config_contenttext = null;
+            }
+
+            // Custom search.
+            $filterformhelper = '\mod_dataform\helper\filterform';
+            if ($customsearch = $filterformhelper::get_custom_search_from_form($data, $this->block->dataformid)) {
+                $data->config_customsearch = $customsearch;
+            } else {
+                $data->config_customsearch = null;
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -43,7 +86,7 @@ class block_dataformnotification_edit_form extends block_edit_form {
             return $errors;
         }
 
-        $notificationformhelper = '\mod_dataform\pluginbase\dataformnotificationform_helper';
+        $notificationformhelper = '\mod_dataform\helper\notificationform';
         if ($errors = $notificationformhelper::general_validation($data, $files, 'config_')) {
             return $errors;
         }
