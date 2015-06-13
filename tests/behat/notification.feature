@@ -121,7 +121,7 @@ Feature: Dataform notifications
         And I follow "Course 1"
         And I follow "Test Dataform Notification Rules"
         
-        When I follow "Edit Entry 1"
+        When I follow "id_editentry1"
         And I set the field "field_1_1" to "the big bang theory"
         And I press "Save"
 
