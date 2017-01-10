@@ -5,7 +5,7 @@ The Dataform notification rules allow sending custom messages to specified recip
 
 Release:
 ------------
-2.8.6
+2.8.12
 
 Documentation:
 --------------
